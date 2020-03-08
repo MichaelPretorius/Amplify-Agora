@@ -1,68 +1,201 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## schema.graphql
 
-## Available Scripts
+```graphql
+type Market @model @searchable {
+	id: ID!
+	name: String!
+	products: [Product]
+		@connection(name: "MarketProducts", sortField: "createdAt")
+	tags: [String]
+	owner: String!
+	createdAt: String
+}
 
-In the project directory, you can run:
+type Product @model @auth(rules: [{allow: owner, identityField: "sub"}]) {
+	id: ID!
+	description: String!
+	market: Market @connection(name: "MarketProducts")
+	file: S3Object!
+	price: Float!
+	shipped: Boolean!
+	owner: String
+	createdAt: String
+}
 
-### `npm start`
+type S3Object {
+	bucket: String!
+	region: String!
+	key: String!
+}
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+type User
+	@model(
+		queries: {get: "getUser"}
+		mutations: {create: "registerUser", update: "updateUser"}
+		subscriptions: null
+	) {
+	id: ID!
+	username: String!
+	email: String!
+	registered: Boolean
+	orders: [Order] @connection(name: "UserOrders", sortField: "createdAt")
+}
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+type Order
+	@model(
+		queries: null
+		mutations: {create: "createOrder"}
+		subscriptions: null
+	) {
+	id: ID!
+	product: Product @connection
+	user: User @connection(name: "UserOrders")
+	shippingAddress: ShippingAddress
+	createdAt: String
+}
 
-### `npm test`
+type ShippingAddress {
+	city: String!
+	country: String!
+	address_line1: String!
+	address_state: String!
+	address_zip: String!
+}
+```
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## app.js
 
-### `npm run build`
+```javascript
+var express = require('express');
+var bodyParser = require('body-parser');
+var awsServerlessExpressMiddleware = require('aws-serverless-express/middleware');
+require('dotenv').config();
+var stripe = require('stripe')('***');
+var AWS = require('aws-sdk');
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+const config = {
+	accessKeyId: '***',
+	secretAccessKey: '***',
+	region: 'us-west-2',
+	adminEmail: '***',
+};
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+var ses = new AWS.SES(config);
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+// declare a new express app
+var app = express();
+app.use(bodyParser.json());
+app.use(awsServerlessExpressMiddleware.eventContext());
 
-### `npm run eject`
+// Enable CORS for all methods
+app.use(function(req, res, next) {
+	res.header('Access-Control-Allow-Origin', '*');
+	res.header(
+		'Access-Control-Allow-Headers',
+		'Origin, X-Requested-With, Content-Type, Accept',
+	);
+	next();
+});
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+const chargeHandler = async (req, res, next) => {
+	const {token} = req.body;
+	const {currency, amount, description} = req.body.charge;
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+	try {
+		const charge = await stripe.charges.create({
+			source: token.id,
+			amount,
+			currency,
+			description,
+		});
+		if (charge.status === 'succeeded') {
+			req.charge = charge;
+			req.description = description;
+			req.email = req.body.email;
+			next();
+		}
+	} catch (err) {
+		res.status(500).json({error: err});
+	}
+};
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+const convertCentsToDollars = price => (price / 100).toFixed(2);
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+const emailHandler = (req, res) => {
+	const {
+		charge,
+		description,
+		email: {shipped, customerEmail, ownerEmail},
+	} = req;
 
-## Learn More
+	ses.sendEmail(
+		{
+			Source: config.adminEmail,
+			ReturnPath: config.adminEmail,
+			Destination: {
+				/* add customerEmail and ownerEmail to ToAddresses array after you've moved out of the sandbox for SES */
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+				ToAddresses: [config.adminEmail],
+			},
+			Message: {
+				Subject: {
+					Data: 'Order Details - AmplifyAgora',
+				},
+				Body: {
+					Html: {
+						Charset: 'UTF-8',
+						Data: `
+            <h3>Order Processed!</h3>
+            <p><span style="font-weight: bold">${description}</span> - $${convertCentsToDollars(
+							charge.amount,
+						)}</p>
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+            <p>Customer Email: <a href="mailto:${customerEmail}">${customerEmail}</a></p>
+            <p>Contact your seller: <a href="mailto:${ownerEmail}">${ownerEmail}</a></p>
 
-### Code Splitting
+            ${
+							shipped
+								? `<h4>Mailing Address</h4>
+              <p>${charge.source.name}</p>
+              <p>${charge.source.address_line1}</p>
+              <p>${charge.source.address_city}, ${charge.source.address_state} ${charge.source.address_zip}</p>
+              `
+								: 'Emailed product'
+						}
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+            <p style="font-style: italic; color: grey;">
+              ${
+								shipped
+									? 'Your product will be shipped in 2-3 days'
+									: 'Check your verified email for your emailed product'
+							}
+            </p>
+            `,
+					},
+				},
+			},
+		},
+		(err, data) => {
+			if (err) {
+				return res.status(500).json({error: err});
+			}
+			res.json({
+				message: 'Order processed successfully!',
+				charge,
+				data,
+			});
+		},
+	);
+};
 
-### Analyzing the Bundle Size
+app.post('/charge', chargeHandler, emailHandler);
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+app.listen(3000, function() {
+	console.log('App started');
+});
 
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+// Export the app object. When executing the application local this does nothing. However,
+// to port it to AWS Lambda we will create a wrapper around that will load the app from
+// this file
+module.exports = app;
+```
