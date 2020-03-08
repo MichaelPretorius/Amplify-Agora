@@ -1,0 +1,20 @@
+{
+    "demo": {
+        "awscloudformation": {
+            "AuthRoleName": "amplify-amplifyagora-demo-213044-authRole",
+            "UnauthRoleArn": "arn:aws:iam::919941348801:role/amplify-amplifyagora-demo-213044-unauthRole",
+            "AuthRoleArn": "arn:aws:iam::919941348801:role/amplify-amplifyagora-demo-213044-authRole",
+            "Region": "eu-west-1",
+            "DeploymentBucketName": "amplify-amplifyagora-demo-213044-deployment",
+            "UnauthRoleName": "amplify-amplifyagora-demo-213044-unauthRole",
+            "StackName": "amplify-amplifyagora-demo-213044",
+            "StackId": "arn:aws:cloudformation:eu-west-1:919941348801:stack/amplify-amplifyagora-demo-213044/51873450-6173-11ea-85c4-06310ddbba8e",
+            "AmplifyAppId": "d2v08w7oi1xopc"
+        },
+        "categories": {
+            "auth": {
+                "amplifyagoracf4df76d": {}
+            }
+        }
+    }
+}
