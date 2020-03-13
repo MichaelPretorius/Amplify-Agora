@@ -1,10 +1,13 @@
 import React from 'react'
+import NewMarket from '../components/NewMarket';
+import MarketList from '../components/MarketList';
 
 const HomePage = () => {
   return (
-    <div>
-      HomePage
-    </div>
+    <>
+      <NewMarket />
+      <MarketList />
+    </>
   )
 }
 

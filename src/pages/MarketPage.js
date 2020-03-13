@@ -1,9 +1,11 @@
 import React from 'react';
 
-const MarketPage = () => {
+const MarketPage = ({ match }) => {
+  const marketId = match.params.marketId;
+
   return (
     <div>
-      MarketPage
+      MarketPage {marketId}
     </div>
   );
 }
