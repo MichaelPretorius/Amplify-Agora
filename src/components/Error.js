@@ -1,10 +1,10 @@
 import React from 'react';
 
-const Error = () => {
+const Error = ({ errors }) => {
   return (
-    <div>
-      Error
-    </div>
+    <pre className="error">
+      {errors.map(({ message }, i) => <div key={i}>{message}</div>)}
+    </pre>
   );
 }
 
