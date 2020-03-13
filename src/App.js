@@ -55,16 +55,22 @@ const App = () => {
 			{!user ? (
 				<Authenticator theme={theme} />
 			) : (
-				<UserContext.Provider value={{ user }} >
-          <Router>
-            <Navbar user={user} handleSignOut={handleSignOut} />
-            <div className='app-container'>
-              <Route exact path='/' component={HomePage} />
-              <Route exact path='/profile' component={ProfilePage} />
-              <Route exact path='/markets/:marketId' component={MarketPage} />
-            </div>
-          </Router>
-        </UserContext.Provider>
+				<UserContext.Provider value={{user}}>
+					<Router>
+						<Navbar user={user} handleSignOut={handleSignOut} />
+						<div className='app-container'>
+							<Route exact path='/' component={HomePage} />
+							<Route exact path='/profile' component={ProfilePage} />
+							<Route
+								exact
+								path='/markets/:marketId'
+								component={({match}) => (
+									<MarketPage user={user} match={match} />
+								)}
+							/>
+						</div>
+					</Router>
+				</UserContext.Provider>
 			)}
 		</>
 	);
