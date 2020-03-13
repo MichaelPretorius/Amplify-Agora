@@ -144,6 +144,14 @@ export const searchMarkets = /* GraphQL */ `
         id
         name
         products {
+          items {
+            id
+            description
+            price
+            shipped
+            owner
+            createdAt
+          }
           nextToken
         }
         tags

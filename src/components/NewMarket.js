@@ -4,48 +4,54 @@ import { createMarket } from '../graphql/mutations';
 import { Form, Button, Dialog, Input, Select, Notification } from 'element-react';
 import { UserContext } from '../App';
 
-const NewMarket = () => {
-  const [addMarketDialog, setaddMarketDialog] = useState(false);
-  const [name, setname] = useState('');
-  const [selectedTags, setselectedTags] = useState([]);
-  const [options, setoptions] = useState([]);
+const NewMarket = ({
+	setsearchTerm,
+	setsearchResults,
+	searchTerm,
+	isSearching,
+	handleSearch,
+}) => {
+	const [addMarketDialog, setaddMarketDialog] = useState(false);
+	const [name, setname] = useState('');
+	const [selectedTags, setselectedTags] = useState([]);
+	const [options, setoptions] = useState([]);
 
-  const tags = ['Arts', 'Technology', 'Crafts', 'Entertainment', 'Web Dev'];
-  const { user } = useContext(UserContext);
+	const tags = ['Arts', 'Technology', 'Crafts', 'Entertainment', 'Web Dev'];
+	const {user} = useContext(UserContext);
 
-  const handleAddMarket = async () => {
-    try {
-      setaddMarketDialog(false);
-      const res = await API.graphql(
+	const handleAddMarket = async () => {
+		try {
+			setaddMarketDialog(false);
+			const res = await API.graphql(
 				graphqlOperation(createMarket, {
 					input: {
 						name,
-            owner: user.username,
-            tags: selectedTags
+						owner: user.username,
+						tags: selectedTags,
 					},
 				}),
-      );
-      console.log(`Created market: id ${res.data.createMarket.id}`);
-      setname('');
-      setselectedTags([]);
-    } catch (err) {
-      console.log('Error adding new market: ', err)
-      Notification.error({
-        title: 'Error',
-        message: `${err.message || "Error adding market"}`
-      })
-    }
-  }
+			);
+			console.log(`Created market: id ${res.data.createMarket.id}`);
+			setname('');
+			setselectedTags([]);
+		} catch (err) {
+			console.log('Error adding new market: ', err);
+			Notification.error({
+				title: 'Error',
+				message: `${err.message || 'Error adding market'}`,
+			});
+		}
+	};
 
-  const handleFilterTags = query => {
-    const options = tags
-      .map(tag => ({ value: tag, label: tag}))
-      .filter(tag => tag.label.toLowerCase().includes(query.toLowerCase()))
+	const handleFilterTags = query => {
+		const options = tags
+			.map(tag => ({value: tag, label: tag}))
+			.filter(tag => tag.label.toLowerCase().includes(query.toLowerCase()));
 
-    setoptions(options);
-  }
+		setoptions(options);
+	};
 
-  return (
+	return (
 		<>
 			<div className='market-header'>
 				<h1 className='market-title'>
@@ -57,6 +63,26 @@ const NewMarket = () => {
 						onClick={() => setaddMarketDialog(true)}
 					/>
 				</h1>
+
+				<Form inline onSubmit={handleSearch}>
+					<Form.Item>
+						<Input
+							placeholder='Search Markets...'
+							icon='circle-cross'
+							value={searchTerm}
+              onIconClick={() => {
+                setsearchTerm('');
+                setsearchResults([]);
+              }}
+							onChange={value => setsearchTerm(value)}
+						/>
+					</Form.Item>
+					<Form.Item>
+						<Button type='info' icon='search' onClick={handleSearch} loading={isSearching}>
+							Search
+						</Button>
+					</Form.Item>
+				</Form>
 			</div>
 
 			<Dialog
@@ -101,6 +127,6 @@ const NewMarket = () => {
 			</Dialog>
 		</>
 	);
-}
+};
 
 export default NewMarket;
