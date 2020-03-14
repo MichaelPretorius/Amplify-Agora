@@ -1,10 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { API, graphqlOperation } from 'aws-amplify';
-import { getMarket } from '../graphql/queries';
 import { Loading, Tabs, Icon, Button } from 'element-react';
 import { Link } from 'react-router-dom'
 import NewProduct from '../components/NewProduct';
 import Product from '../components/Product';
+
+const getMarket = /* GraphQL */ `
+  query GetMarket($id: ID!) {
+    getMarket(id: $id) {
+      id
+      name
+      products {
+        items {
+          id
+          description
+          price
+          shipped
+          owner
+          createdAt
+          file {
+            key
+          }
+        }
+        nextToken
+      }
+      tags
+      owner
+      createdAt
+    }
+  }
+`;
 
 const MarketPage = ({ match, user }) => {
   const [market, setmarket] = useState(null);
@@ -81,11 +106,11 @@ const MarketPage = ({ match, user }) => {
               }
               name="2"
             >
-              {/* <div className="product-list">
+              <div className="product-list">
                 {market.products.items.map(product => (
-                  <Product product={product} />
+                  <Product key={product.id} product={product} />
                 ))}
-              </div> */}
+              </div>
             </Tabs.Pane>
           </Tabs>
         </>

@@ -14,6 +14,11 @@ export const getMarket = /* GraphQL */ `
           shipped
           owner
           createdAt
+          file {
+            bucket
+            region
+            key
+          }
         }
         nextToken
       }
@@ -41,6 +46,11 @@ export const listMarkets = /* GraphQL */ `
             shipped
             owner
             createdAt
+            file {
+              bucket
+              region
+              key
+            }
           }
           nextToken
         }
@@ -151,6 +161,11 @@ export const searchMarkets = /* GraphQL */ `
             shipped
             owner
             createdAt
+            file {
+              bucket
+              region
+              key
+            }
           }
           nextToken
         }

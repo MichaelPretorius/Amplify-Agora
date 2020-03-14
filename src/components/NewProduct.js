@@ -12,7 +12,7 @@ const NewProduct = ({ marketId }) => {
   const [shipped, setshipped] = useState(true);
   const [imagePreview, setimagePreview] = useState('');
   const [image, setimage] = useState('');
-  const [isUploading, setisUploading] = useState('');
+  const [isUploading, setisUploading] = useState(false);
   const [percentUploaded, setpercentUploaded] = useState(0);
 
   const handleAddProduct = async () => {
