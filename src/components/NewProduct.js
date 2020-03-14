@@ -1,22 +1,58 @@
 import React, { useState } from 'react';
-import { API, graphqlOperation } from 'aws-amplify';
+import { API, graphqlOperation, Storage, Auth } from 'aws-amplify';
 import { PhotoPicker } from 'aws-amplify-react';
 import { Form, Button, Input, Notification, Radio, Progress } from 'element-react';
+import aws_exports from '../aws-exports';
+import { createProduct } from '../graphql/mutations';
+import { converDollarsToCents } from '../utils';
 
-const NewProduct = () => {
+const NewProduct = ({ marketId }) => {
   const [description, setdescription] = useState('');
   const [price, setprice] = useState('');
   const [shipped, setshipped] = useState(true);
   const [imagePreview, setimagePreview] = useState('');
   const [image, setimage] = useState('');
+  const [isUploading, setisUploading] = useState('');
 
-  const handleAddProduct = () => {
-    console.log(image)
-    setdescription('');
-    setprice('');
-    setshipped(true);
-    setimagePreview('');
-    setimage('');
+  const handleAddProduct = async () => {
+    try {
+      setisUploading(true);
+      const visibility = 'public';
+      const { identityId } = await Auth.currentCredentials();
+      const filename = `/${visibility}/${identityId}/${Date.now()}-${image.name}`
+      const uploadedFile = await Storage.put(filename, image.file, {
+        contentType: image.type
+      })
+      const file = {
+        key: uploadedFile.key,
+        bucket: aws_exports.aws_user_files_s3_bucket,
+        region: aws_exports.aws_user_files_s3_bucket_region
+      }
+      const input = {
+        productMarketId: marketId,
+        description,
+        shipped,
+        file,
+        price: converDollarsToCents(price)
+      }
+  
+      const res = await API.graphql(graphqlOperation(createProduct, { input } ))
+      console.log('Created product: ', res)
+      Notification({
+        title: 'Success',
+        message: 'Product successfully created!',
+        type: 'success'
+      })
+  
+      setdescription('');
+      setprice('');
+      setshipped(true);
+      setimagePreview('');
+      setimage('');
+      setisUploading(false);
+    } catch (err) {
+      console.log('Error adding Product: ', err);
+    }
   }
 
   return (
@@ -38,7 +74,7 @@ const NewProduct = () => {
 							type='number'
 							icon='plus'
               value={price}
-							placeholder='Price (R)'
+							placeholder='Price ($USD)'
 							onChange={price => setprice(price)}
 						/>
 					</Form.Item>
@@ -100,8 +136,13 @@ const NewProduct = () => {
               }
             }}
           />
-          <Button type="primary" onClick={handleAddProduct} disabled={!image || !description || !price}>
-            Add Product
+          <Button 
+            type="primary"
+            onClick={handleAddProduct}
+            disabled={!image || !description || !price || isUploading}
+            loading={isUploading}
+          >
+            {isUploading ? 'Uploading...' : 'Add Product'}
           </Button>
 				</Form>
 			</div>

@@ -68,7 +68,7 @@ const MarketPage = ({ match, user }) => {
                 }
                 name="1"
               >
-                <NewProduct />
+                  <NewProduct marketId={match.params.marketId} />
               </Tabs.Pane>
             )}
   
