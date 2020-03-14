@@ -7,9 +7,16 @@ const NewProduct = () => {
   const [description, setdescription] = useState('');
   const [price, setprice] = useState('');
   const [shipped, setshipped] = useState(true);
+  const [imagePreview, setimagePreview] = useState('');
+  const [image, setimage] = useState('');
 
   const handleAddProduct = () => {
-    console.log('Product added')
+    console.log(image)
+    setdescription('');
+    setprice('');
+    setshipped(true);
+    setimagePreview('');
+    setimage('');
   }
 
   return (
@@ -22,6 +29,7 @@ const NewProduct = () => {
 							type='text'
 							icon='information'
 							placeholder='Description'
+              value={description}
 							onChange={description => setdescription(description)}
 						/>
 					</Form.Item>
@@ -29,6 +37,7 @@ const NewProduct = () => {
 						<Input
 							type='number'
 							icon='plus'
+              value={price}
 							placeholder='Price (R)'
 							onChange={price => setprice(price)}
 						/>
@@ -51,8 +60,47 @@ const NewProduct = () => {
 							</Radio> 
 						</div>
 					</Form.Item>
-          <PhotoPicker />
-          <Button type="primary" onClick={handleAddProduct}>
+          {imagePreview && (
+            <img
+              className="image-preview"
+              src={imagePreview}
+              alt="Product Preview"
+            />
+          )}
+          <PhotoPicker
+            title="Product Image"
+            preview="hidden"
+            onLoad={url => setimagePreview(url)}
+            onPick={file => setimage(file)}
+            theme={{
+              formContainer: {
+                margin: 0,
+                padding: '0.8em'
+              },
+              formSection: {
+                display: 'fex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: 'auto'
+              },
+              photoPlaceholder: {
+                display: 'none'
+              },
+              sectionBody: {
+                margin: 0,
+                width: '250px'
+              },
+              photoPickerButton: {
+                width: '250px'
+              },
+              sectionHeader: {
+                padding: '0.2em',
+                color: 'var(--darkAmazonOrange)'
+              }
+            }}
+          />
+          <Button type="primary" onClick={handleAddProduct} disabled={!image || !description || !price}>
             Add Product
           </Button>
 				</Form>
