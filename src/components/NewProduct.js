@@ -13,6 +13,7 @@ const NewProduct = ({ marketId }) => {
   const [imagePreview, setimagePreview] = useState('');
   const [image, setimage] = useState('');
   const [isUploading, setisUploading] = useState('');
+  const [percentUploaded, setpercentUploaded] = useState(0);
 
   const handleAddProduct = async () => {
     try {
@@ -21,7 +22,11 @@ const NewProduct = ({ marketId }) => {
       const { identityId } = await Auth.currentCredentials();
       const filename = `/${visibility}/${identityId}/${Date.now()}-${image.name}`
       const uploadedFile = await Storage.put(filename, image.file, {
-        contentType: image.type
+        contentType: image.type,
+        progressCallback: ({ loaded, total }) => {
+          const percentUploaded = Math.round((loaded/total) * 100);
+          setpercentUploaded(percentUploaded);
+        }
       })
       const file = {
         key: uploadedFile.key,
@@ -101,6 +106,13 @@ const NewProduct = ({ marketId }) => {
               className="image-preview"
               src={imagePreview}
               alt="Product Preview"
+            />
+          )}
+          {percentUploaded > 0 && (
+            <Progress
+              type="circle"
+              className="progress"
+              percentage={percentUploaded}
             />
           )}
           <PhotoPicker
