@@ -2,7 +2,7 @@ import React from 'react';
 import { graphqlOperation } from 'aws-amplify';
 import { Connect } from 'aws-amplify-react';
 import { Link } from 'react-router-dom'
-import { listMarkets } from '../graphql/queries';
+import { listMarkets } from '../graphql/modified';
 import { onCreateMarket } from '../graphql/subscriptions';
 import { Loading, Card, Icon, Tag } from 'element-react';
 import Error from './Error';

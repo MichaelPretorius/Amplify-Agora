@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { API, graphqlOperation } from 'aws-amplify';
-import { searchMarkets } from '../graphql/queries';
+import { searchMarkets } from '../graphql/modified';
 import NewMarket from '../components/NewMarket';
 import MarketList from '../components/MarketList';
 

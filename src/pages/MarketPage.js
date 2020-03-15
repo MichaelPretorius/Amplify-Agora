@@ -5,33 +5,7 @@ import { Link } from 'react-router-dom'
 import { onCreateProduct, onUpdateProduct, onDeleteProduct } from '../graphql/subscriptions';
 import NewProduct from '../components/NewProduct';
 import Product from '../components/Product';
-import { updateProduct } from '../graphql/mutations';
-
-const getMarket = /* GraphQL */ `
-  query GetMarket($id: ID!) {
-    getMarket(id: $id) {
-      id
-      name
-      products {
-        items {
-          id
-          description
-          price
-          shipped
-          owner
-          createdAt
-          file {
-            key
-          }
-        }
-        nextToken
-      }
-      tags
-      owner
-      createdAt
-    }
-  }
-`;
+import { getMarket } from '../graphql/modified';
 
 const MarketPage = ({ match, user }) => {
   const [market, setmarket] = useState(null);

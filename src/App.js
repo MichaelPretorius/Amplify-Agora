@@ -35,14 +35,11 @@ const App = () => {
   const onHubCapsule = capsule => {
     switch (capsule.payload.event) {
       case 'signIn':
-        console.log('signed in');
         getUserData();
         break;
       case 'signUp':
-        console.log('signed up');
         break;
       case 'signOut':
-        console.log('signed out');
         setuser(null);
         break;
       default:
