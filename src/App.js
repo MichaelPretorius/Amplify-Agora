@@ -1,14 +1,17 @@
 import React, { useState, useEffect, createContext } from 'react';
 import { API, graphqlOperation, Auth, Hub } from 'aws-amplify';
 import { Authenticator, AmplifyTheme } from 'aws-amplify-react';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { Router, Route } from 'react-router-dom';
+import { createBrowserHistory } from 'history';
 import { getUser } from './graphql/queries';
 import { registerUser } from './graphql/mutations';
 import HomePage from './pages/HomePage';
 import MarketPage from './pages/MarketPage';
 import ProfilePage from './pages/ProfilePage';
-import './App.css';
 import Navbar from './components/Navbar';
+import './App.css';
+
+export const history =  createBrowserHistory();
 
 export const UserContext = createContext();
 
@@ -78,7 +81,7 @@ const App = () => {
 				<Authenticator theme={theme} />
 			) : (
 				<UserContext.Provider value={{user}}>
-					<Router>
+					<Router history={history}>
 						<Navbar user={user} handleSignOut={handleSignOut} />
 						<div className='app-container'>
 							<Route exact path='/' component={HomePage} />
