@@ -34,7 +34,14 @@ const App = () => {
   }
 
   const registerNewUser = async signInData=> {
+    const getUserInput = {
+      id: signInData.signInUserSession.idToken.payload.sub
+    };
+    const { data } = await API.graphql(graphqlOperation(getUser, getUserInput));
 
+    if (!data.getUser) {
+      
+    }
   }
 
   const onHubCapsule = capsule => {
