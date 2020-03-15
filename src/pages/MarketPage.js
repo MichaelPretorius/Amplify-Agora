@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { API, graphqlOperation } from 'aws-amplify';
 import { Loading, Tabs, Icon, Button } from 'element-react';
 import { Link } from 'react-router-dom'
+import { onCreateProduct, onUpdateProduct, onDeleteProduct } from '../graphql/subscriptions';
 import NewProduct from '../components/NewProduct';
 import Product from '../components/Product';
+import { updateProduct } from '../graphql/mutations';
 
 const getMarket = /* GraphQL */ `
   query GetMarket($id: ID!) {
@@ -38,6 +40,64 @@ const MarketPage = ({ match, user }) => {
 
   useEffect(() => {
     handleGetMarket();
+
+    const createProductListener = API.graphql(graphqlOperation(onCreateProduct, {
+      owner: user.attributes.sub
+    })).subscribe({
+      next: productData => {
+        const createdProduct = productData.value.data.onCreateProduct;
+        setmarket(prevMarket => {
+          const prevProducts = prevMarket.products.items.filter(
+            item => item.id !== createdProduct.id
+          )
+          const updatedProducts = [createdProduct, ...prevProducts];
+          const marketCopy = { ...prevMarket };
+          marketCopy.products.items = updatedProducts;
+          return marketCopy;
+        });
+      }
+    })
+    const updateProductListener = API.graphql(graphqlOperation(onUpdateProduct, {
+      owner: user.attributes.sub
+    })).subscribe({
+      next: productData => {
+        const updatedProduct = productData.value.data.onUpdateProduct;
+        setmarket(market => {
+          const updatedProductIndex = market.products.items.findIndex(
+            item => item.id === updatedProduct.id
+          )
+          const updatedProducts = [
+            ...market.products.items.slice(0, updatedProductIndex),
+            updatedProduct,
+            ...market.products.items.slice(updatedProductIndex + 1)
+          ];
+          const marketCopy = { ...market };
+          marketCopy.products.items = updatedProducts;
+          return marketCopy;
+        })
+      }
+    })
+    const deleteProductListener = API.graphql(graphqlOperation(onDeleteProduct, {
+      owner: user.attributes.sub
+    })).subscribe({
+      next: productData => {
+        const deletedProduct = productData.value.data.onDeleteProduct;
+        setmarket(prevMarket => {
+          const updatedProducts = prevMarket.products.items.filter(
+            item => item.id !== deletedProduct.id
+          )
+          const marketCopy = { ...prevMarket };
+          marketCopy.products.items = updatedProducts;
+          return marketCopy;
+        });
+      }
+    })
+
+    return () => {
+      createProductListener.unsubscribe();
+      updateProductListener.unsubscribe();
+      deleteProductListener.unsubscribe();
+    } 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
