@@ -3,6 +3,7 @@ import { API, graphqlOperation, Auth, Hub } from 'aws-amplify';
 import { Authenticator, AmplifyTheme } from 'aws-amplify-react';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import { getUser } from './graphql/queries';
+import { registerUser } from './graphql/mutations';
 import HomePage from './pages/HomePage';
 import MarketPage from './pages/MarketPage';
 import ProfilePage from './pages/ProfilePage';
@@ -40,7 +41,18 @@ const App = () => {
     const { data } = await API.graphql(graphqlOperation(getUser, getUserInput));
 
     if (!data.getUser) {
-      
+      try {
+        const registerUserInput = {
+          ...getUserInput,
+          userName: signInData.username,
+          email: signInData.signInUserSession.idToken.payload.email,
+          registered: true
+        }
+        const newUser = await API.graphql(graphqlOperation(registerUser, { input: registerUserInput }))
+        console.log({ newUser })
+      } catch (error) {
+        console.log('Error registering new user: ', error)
+      }
     }
   }
 
