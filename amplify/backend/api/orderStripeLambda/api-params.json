@@ -1,0 +1,37 @@
+{
+    "paths": [
+        {
+            "name": "/charge",
+            "lambdaFunction": "orderStripeLambda",
+            "privacy": {
+                "private": true,
+                "auth": [
+                    "/POST"
+                ]
+            }
+        }
+    ],
+    "resourceName": "orderStripeLambda",
+    "apiName": "orderStripeLambda",
+    "functionArns": [
+        {
+            "lambdaFunction": "orderStripeLambda"
+        }
+    ],
+    "privacy": {
+        "auth": 1,
+        "unauth": 0,
+        "authRoleName": "amplify-amplifyagora-demo-213044-authRole",
+        "unAuthRoleName": "amplify-amplifyagora-demo-213044-unauthRole"
+    },
+    "dependsOn": [
+        {
+            "category": "function",
+            "resourceName": "orderStripeLambda",
+            "attributes": [
+                "Name",
+                "Arn"
+            ]
+        }
+    ]
+}

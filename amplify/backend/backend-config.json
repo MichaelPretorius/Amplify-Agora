@@ -21,12 +21,33 @@
 					}
 				}
 			}
+		},
+		"orderStripeLambda": {
+			"service": "API Gateway",
+			"providerPlugin": "awscloudformation",
+			"dependsOn": [
+				{
+					"category": "function",
+					"resourceName": "orderStripeLambda",
+					"attributes": [
+						"Name",
+						"Arn"
+					]
+				}
+			]
 		}
 	},
 	"storage": {
 		"s341e4d57b": {
 			"service": "S3",
 			"providerPlugin": "awscloudformation"
+		}
+	},
+	"function": {
+		"orderStripeLambda": {
+			"service": "Lambda",
+			"providerPlugin": "awscloudformation",
+			"build": true
 		}
 	}
 }
