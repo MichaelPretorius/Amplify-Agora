@@ -1,7 +1,8 @@
 import React, { useState, useEffect, createContext } from 'react';
-import { Auth, Hub } from 'aws-amplify';
+import { API, graphqlOperation, Auth, Hub } from 'aws-amplify';
 import { Authenticator, AmplifyTheme } from 'aws-amplify-react';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { getUser } from './graphql/queries';
 import HomePage from './pages/HomePage';
 import MarketPage from './pages/MarketPage';
 import ProfilePage from './pages/ProfilePage';
@@ -32,10 +33,15 @@ const App = () => {
     }
   }
 
+  const registerNewUser = async signInData=> {
+
+  }
+
   const onHubCapsule = capsule => {
     switch (capsule.payload.event) {
       case 'signIn':
         getUserData();
+        registerNewUser(capsule.payload.data);
         break;
       case 'signUp':
         break;

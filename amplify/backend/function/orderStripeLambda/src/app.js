@@ -1,27 +1,22 @@
-/*
-Copyright 2017 - 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
-    http://aws.amazon.com/apache2.0/
-or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and limitations under the License.
-*/
+var express = require('express');
+var bodyParser = require('body-parser');
+var awsServerlessExpressMiddleware = require('aws-serverless-express/middleware');
+require('dotenv').config();
+var stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+var AWS = require('aws-sdk');
 
+const config = {
+	accessKeyId: process.env.AWS_ACCESS_KEY_ID_1,
+	secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_1,
+	reqion: 'eu-west-1',
+	adminEmail: 'michaelpretorius96@gmail.com',
+};
 
-/* Amplify Params - DO NOT EDIT
-You can access the following resource attributes as environment variables from your Lambda function
-var environment = process.env.ENV
-var region = process.env.REGION
-
-Amplify Params - DO NOT EDIT */
-
-var express = require('express')
-var bodyParser = require('body-parser')
-var awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
-
+var ses = new AWS.SES(config);
 // declare a new express app
-var app = express()
-app.use(bodyParser.json())
-app.use(awsServerlessExpressMiddleware.eventContext())
+var app = express();
+app.use(bodyParser.json());
+app.use(awsServerlessExpressMiddleware.eventContext());
 
 // Enable CORS for all methods
 app.use(function(req, res, next) {
@@ -34,10 +29,70 @@ app.use(function(req, res, next) {
 * post method *
 ****************************/
 
-app.post('/charge', function(req, res) {
-  // Add your code here
-  res.json({success: 'post call succeed!', url: req.url, body: req.body})
-});
+const chargeHandler = async (req, res, next) => {
+	// const { token } = req.body;
+	const {currency, amount, description, email} = req.body.charge;
+
+	try {
+		const charge = await stripe.paymentIntents.create({
+			// source: token.id,
+			amount,
+			currency,
+			description,
+			payment_method_types: ['card'],
+			receipt_email: email,
+		});
+    // res.json(charge);
+    // if (charge.status === 'succeeded') {
+		// 	next();
+		// }
+    if (charge.object === 'payment_intent') {
+      req.charge = charge;
+      // req.shipped = shipped;
+      // req.description = description;
+			next();
+		}
+	} catch (error) {
+		res.status(500).json({error});
+	}
+};
+
+const emailHandler = (req, res) => {
+  const charge = req.charge;
+
+  ses.sendEmail(
+		{
+			Source: config.adminEmail,
+			ReturnPath: config.adminEmail,
+			Destination: {
+				ToAddresses: [config.adminEmail],
+			},
+			Message: {
+				Subject: {
+					Data: 'Order Details - AmplifyAgora',
+				},
+				Body: {
+					Html: {
+						Charset: 'UTF-8',
+						Data: '<h3>Order Processed!</h3>',
+					},
+				},
+			},
+		},
+		(err, data) => {
+			if (err) {
+				res.json({error: err});
+			}
+			res.json({
+				message: 'Order processed successfully!',
+				charge,
+				data,
+			});
+		},
+	);
+};
+
+app.post('/charge', chargeHandler, emailHandler);
 
 app.listen(3000, function() {
     console.log("App started")

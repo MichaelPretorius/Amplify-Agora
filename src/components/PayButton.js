@@ -12,10 +12,16 @@ const PayButton = ({ product, user }) => {
   const handleCharge = async token => {
     try {
       const res = await API.post('orderStripeLambda', '/charge', {
-        body: {
-          token
-        }
-      })
+				body: {
+					token,
+					charge: {
+						currency: stripeConfig.currency,
+						amount: product.price,
+						description: product.description,
+						email: user.attributes.email
+					},
+				},
+			});
       console.log({ res })
     } catch (error) {
       console.log('Error making Stripe Checkout: ', error);
