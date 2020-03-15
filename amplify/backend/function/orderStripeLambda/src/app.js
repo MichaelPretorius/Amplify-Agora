@@ -31,7 +31,8 @@ app.use(function(req, res, next) {
 
 const chargeHandler = async (req, res, next) => {
 	// const { token } = req.body;
-	const {currency, amount, description, email} = req.body.charge;
+	const {currency, amount, description} = req.body.charge;
+	const { email } = req.body;
 
 	try {
 		const charge = await stripe.paymentIntents.create({
@@ -40,7 +41,7 @@ const chargeHandler = async (req, res, next) => {
 			currency,
 			description,
 			payment_method_types: ['card'],
-			receipt_email: email,
+			receipt_email: email.customerEmail,
 		});
     // res.json(charge);
     // if (charge.status === 'succeeded') {
@@ -48,8 +49,8 @@ const chargeHandler = async (req, res, next) => {
 		// }
     if (charge.object === 'payment_intent') {
       req.charge = charge;
-      // req.shipped = shipped;
-      // req.description = description;
+      req.description = description;
+      req.email = email;
 			next();
 		}
 	} catch (error) {
@@ -57,8 +58,10 @@ const chargeHandler = async (req, res, next) => {
 	}
 };
 
+const converCentsToDollars = price => (price / 100).toFixed(2);
+
 const emailHandler = (req, res) => {
-  const charge = req.charge;
+  const { charge, description, email: { shipped, customerEmail, ownerEmail } } = req;
 
   ses.sendEmail(
 		{
@@ -74,7 +77,23 @@ const emailHandler = (req, res) => {
 				Body: {
 					Html: {
 						Charset: 'UTF-8',
-						Data: '<h3>Order Processed!</h3>',
+						Data: `
+            <h3>Order Processed!</h3>
+            <p><span style="font-weight: bold;">${description}</span> - $${converCentsToDollars(
+							charge.amount,
+						)}</p>
+            
+            <p>Customer Email: <a href="mailto:${customerEmail}">${customerEmail}</a></p>
+            <p>Contact your seller: <a href="mailto:${ownerEmail}">${ownerEmail}</a></p>
+
+            <h4>Delivery method:</h4>
+            <p>${shipped ? 'Shipped' : 'Emailed'}</p>
+
+            <p style="font-style: italic; color: grey;">
+              ${shipped ? 'Your product will be shipped in 2-3 days' :
+              'Check your verified email for your emailed product'}
+            </p>
+            `,
 					},
 				},
 			},

@@ -1,7 +1,8 @@
 import React from 'react';
-import { API } from 'aws-amplify';
+import { API, graphqlOperation } from 'aws-amplify';
 import StripeCheckout from 'react-stripe-checkout';
 import { Notification, Message } from 'element-react';
+import { getUser } from '../graphql/queries';
 
 const stripeConfig = {
   currency: 'USD',
@@ -9,8 +10,19 @@ const stripeConfig = {
 }
 
 const PayButton = ({ product, user }) => {
+  const getOwnerEmail = async ownerId => {
+    try {
+      const input = { id: ownerId };
+      const res = await API.graphql(graphqlOperation(getUser, input));
+      return res.data.getUser.email;
+    } catch (error) {
+      console.log('Error fetching Product Owner Email: ',error)
+    }
+  }
+
   const handleCharge = async token => {
     try {
+      const ownerEmail = await getOwnerEmail(product.owner);
       const res = await API.post('orderStripeLambda', '/charge', {
 				body: {
 					token,
@@ -18,8 +30,12 @@ const PayButton = ({ product, user }) => {
 						currency: stripeConfig.currency,
 						amount: product.price,
 						description: product.description,
-						email: user.attributes.email
-					},
+          },
+          email: {
+            customerEmail: user.attributes.email,
+            ownerEmail,
+            shipped: product.shipped
+          }
 				},
 			});
       console.log({ res })
