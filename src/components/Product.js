@@ -81,7 +81,7 @@ const Product = ({ product }) => {
               ${converCentsToDollars(product.price)}
             </span>
             {!isProductOwner && (
-              <PayButton />
+              <PayButton product={product} user={user} />
             )}
           </div>
         </div>
