@@ -27,7 +27,7 @@ const Product = ({ product }) => {
         price: converDollarsToCents(price)
       }
       
-      const res = await API.graphql(graphqlOperation(updateProduct, { input }));
+      await API.graphql(graphqlOperation(updateProduct, { input }));
       Notification({
         title: 'Success',
         message: 'Product Successfully Updated',

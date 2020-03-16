@@ -98,3 +98,35 @@ export const listMarkets = /* GraphQL */ `
     }
   }
 `;
+
+export const getUser = /* GraphQL */ `
+  query GetUser($id: ID!) {
+    getUser(id: $id) {
+      id
+      userName
+      email
+      registered
+      orders {
+        items {
+          id
+          createdAt
+          product {
+            id
+            owner
+            price
+            createdAt
+            description
+          }
+          shippingAddress {
+            city
+            country
+            address_line1
+            address_state
+            address_zip
+          }
+        }
+        nextToken
+      }
+    }
+  }
+`;

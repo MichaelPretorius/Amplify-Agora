@@ -85,7 +85,7 @@ const App = () => {
 						<Navbar user={user} handleSignOut={handleSignOut} />
 						<div className='app-container'>
 							<Route exact path='/' component={HomePage} />
-							<Route exact path='/profile' component={ProfilePage} />
+							<Route exact path='/profile' component={() => <ProfilePage user={user} />} />
 							<Route
 								exact
 								path='/markets/:marketId'
