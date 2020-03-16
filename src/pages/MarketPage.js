@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { API, graphqlOperation } from 'aws-amplify';
-import { Loading, Tabs, Icon, Button } from 'element-react';
+import { Loading, Tabs, Icon } from 'element-react';
 import { Link } from 'react-router-dom'
 import { onCreateProduct, onUpdateProduct, onDeleteProduct } from '../graphql/subscriptions';
 import NewProduct from '../components/NewProduct';
