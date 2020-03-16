@@ -37,7 +37,7 @@ const ProfilePage = ({ user, userAttributes }) => {
             );
           case "Delete Profile":
             return (
-              <Button type="danger" size="small">Delete</Button>
+              <Button type="danger" size="small" onClick={handleDeleteProfile}>Delete</Button>
             );
           default:
             return;
@@ -112,6 +112,29 @@ const ProfilePage = ({ user, userAttributes }) => {
         message: `${error.message || 'Error updating email'}`
       })
     }
+  }
+
+  const handleDeleteProfile = async () => {
+    MessageBox.confirm(
+      'This will permanently delete your account. Continue?',
+      'Attention!',
+      {
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+        type: 'warning'
+      }
+    ).then(async () => {
+      try {
+        await user.deleteUser();
+      } catch (error) {
+        console.log(error)
+      }
+    }).catch(() => {
+      Message({
+        type: 'info',
+        message: 'Delete Canceled!'
+      })
+    })
   }
 
   return userAttributes && (
