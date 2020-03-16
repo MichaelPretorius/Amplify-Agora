@@ -14,7 +14,7 @@ const Product = ({ product }) => {
   const [price, setprice] = useState('');
   const [shipped, setshipped] = useState(true)
 
-  const {user} = useContext(UserContext);
+  const { user, userAttributes } = useContext(UserContext);
   const isProductOwner = user && user.attributes.sub === product.owner;
 
   const handleUpdateProduct = async productId => {
@@ -81,7 +81,7 @@ const Product = ({ product }) => {
               ${converCentsToDollars(product.price)}
             </span>
             {!isProductOwner && (
-              <PayButton product={product} user={user} />
+              <PayButton product={product} userAttributes={userAttributes} />
             )}
           </div>
         </div>

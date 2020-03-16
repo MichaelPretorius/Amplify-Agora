@@ -17,17 +17,29 @@ export const UserContext = createContext();
 
 const App = () => {
   const [user, setuser] = useState( null );
+  const [userAttributes, setuserAttributes] = useState( null );
 
   useEffect(() => {
     getUserData();
     Hub.listen('auth', onHubCapsule);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    user && getUserAttributes(user)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
   
   const getUserData = async () => {
     const user = await Auth.currentAuthenticatedUser();
     user ? setuser(user) : setuser(null);
   };
+
+  const getUserAttributes = async authUserData => {
+    const attributesArr = await Auth.userAttributes(authUserData);
+    const attributesObj = Auth.attributesToObject(attributesArr);
+    setuserAttributes(attributesObj);
+  }
 
   const handleSignOut = async () => {
     try {
@@ -80,12 +92,12 @@ const App = () => {
 			{!user ? (
 				<Authenticator theme={theme} />
 			) : (
-				<UserContext.Provider value={{user}}>
+				<UserContext.Provider value={{user, userAttributes}}>
 					<Router history={history}>
 						<Navbar user={user} handleSignOut={handleSignOut} />
 						<div className='app-container'>
 							<Route exact path='/' component={HomePage} />
-							<Route exact path='/profile' component={() => <ProfilePage user={user} />} />
+							<Route exact path='/profile' component={() => <ProfilePage user={user} userAttributes={userAttributes} />} />
 							<Route
 								exact
 								path='/markets/:marketId'
