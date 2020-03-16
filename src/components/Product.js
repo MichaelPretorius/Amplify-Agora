@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { S3Image } from 'aws-amplify-react';
 import { API, graphqlOperation } from 'aws-amplify';
+import { Link } from 'react-router-dom'
 import { Notification, Popover, Button, Dialog, Card, Form, Input, Radio } from 'element-react';
 import { updateProduct, deleteProduct } from '../graphql/mutations';
 import { converCentsToDollars, converDollarsToCents } from '../utils';
@@ -16,6 +17,7 @@ const Product = ({ product }) => {
 
   const { user, userAttributes } = useContext(UserContext);
   const isProductOwner = user && user.attributes.sub === product.owner;
+  const isEmailVerified = userAttributes && userAttributes.email.verified;
 
   const handleUpdateProduct = async productId => {
     try {
@@ -37,7 +39,6 @@ const Product = ({ product }) => {
       console.log('Failed to update product: ', error);
     }
   }
-
 
   const handleDeleteProduct = async productId => {
     try {
@@ -80,8 +81,12 @@ const Product = ({ product }) => {
             <span className="mx-1">
               ${converCentsToDollars(product.price)}
             </span>
-            {!isProductOwner && (
+            {isEmailVerified ? (!isProductOwner && (
               <PayButton product={product} userAttributes={userAttributes} />
+            )) : (
+              <Link to="/profile">
+                Verify Email
+              </Link>
             )}
           </div>
         </div>

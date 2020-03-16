@@ -102,7 +102,7 @@ const App = () => {
 								exact
 								path='/markets/:marketId'
 								component={({match}) => (
-									<MarketPage user={user} match={match} />
+                  <MarketPage user={user} match={match} userAttributes={userAttributes} />
 								)}
 							/>
 						</div>

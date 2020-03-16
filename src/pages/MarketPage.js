@@ -7,10 +7,11 @@ import NewProduct from '../components/NewProduct';
 import Product from '../components/Product';
 import { getMarket } from '../graphql/modified';
 
-const MarketPage = ({ match, user }) => {
+const MarketPage = ({ match, user, userAttributes }) => {
   const [market, setmarket] = useState(null);
   const [isLoading, setisLoading] = useState(true);
   const [isMarketOwner, setisMarketOwner] = useState(false);
+  const [isEmailVerified, setisEmailVerified] = useState(false);
 
   useEffect(() => {
     handleGetMarket();
@@ -78,9 +79,16 @@ const MarketPage = ({ match, user }) => {
   useEffect(() => {
     if (market) {
       checkMarketOwner();
+      checkEmailVerified();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [market])
+
+  const checkEmailVerified = () => {
+    if (userAttributes) {
+      setisEmailVerified(userAttributes.email_verified);
+    }
+  }
 
   const handleGetMarket = async () => {
     const res = await API.graphql(
@@ -127,7 +135,13 @@ const MarketPage = ({ match, user }) => {
                 }
                 name="1"
               >
+                {isEmailVerified ? (
                   <NewProduct marketId={match.params.marketId} />
+                ) : (
+                  <Link to="/profile" className="header">
+                    Verify Your Email Before Adding Products
+                  </Link>
+                )}
               </Tabs.Pane>
             )}
   
