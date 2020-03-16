@@ -3,7 +3,7 @@ export const getMarket = /* GraphQL */ `
     getMarket(id: $id) {
       id
       name
-      products {
+      products(sortDirection: DESC, limit: 999) {
         items {
           id
           description
@@ -106,7 +106,7 @@ export const getUser = /* GraphQL */ `
       userName
       email
       registered
-      orders {
+      orders(sortDirection: DESC, limit: 999) {
         items {
           id
           createdAt

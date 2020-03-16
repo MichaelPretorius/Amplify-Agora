@@ -48,7 +48,6 @@ const PayButton = ({ product, user }) => {
           }
 				},
 			});
-      console.log({ res })
       // if (res.charge.status === "succeeded")
       if (res.message === "Order processed successfully!") {
         let shippingAddress = null;
@@ -62,7 +61,6 @@ const PayButton = ({ product, user }) => {
           shippingAddress
         }
         const order = await API.graphql(graphqlOperation(createOrder, { input }));
-        console.log({ order })
         Notification({
           title: 'Success',
           message: `${res.message}`,
