@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { API, graphqlOperation, Auth } from 'aws-amplify';
 import { Table, Button, Notification, MessageBox, Message, Tabs, Icon, Form, Dialog, Input, Card, Tag } from 'element-react';
 import { getUser } from '../graphql/modified';
-import { converCentsToDollars } from '../utils';
+import { converCentsToDollars, formatOrderDate } from '../utils';
 
 const ProfilePage = ({ user, userAttributes }) => {
   const [verificationForm, setverificationForm] = useState(false)
@@ -197,7 +197,7 @@ const ProfilePage = ({ user, userAttributes }) => {
                   <p>Order Id: {order.id}</p>
                   <p>Product Description: {order.product.description}</p>
                   <p>Price: ${converCentsToDollars(order.product.price)}</p>
-                  <p>Purchased on {order.createdAt}</p>
+                  <p>Purchased on {formatOrderDate(order.createdAt)}</p>
                   {order.shippingAddress && (
                     <>
                       Shipping Address

@@ -6,6 +6,7 @@ import { onCreateProduct, onUpdateProduct, onDeleteProduct } from '../graphql/su
 import NewProduct from '../components/NewProduct';
 import Product from '../components/Product';
 import { getMarket } from '../graphql/modified';
+import { formatProductDate } from '../utils';
 
 const MarketPage = ({ match, user, userAttributes }) => {
   const [market, setmarket] = useState(null);
@@ -120,7 +121,7 @@ const MarketPage = ({ match, user, userAttributes }) => {
           <div className="items-center pt-2">
             <span style={{ color: "var(--lightSquidInk)", paddingBottom: "1em"}}>
               <Icon name="date" className="icon" />
-              {market.createdAt}
+                {formatProductDate(market.createdAt)}
             </span>
           </div>
 
